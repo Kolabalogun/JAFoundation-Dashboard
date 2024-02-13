@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PageTitle from "../components/Typography/PageTitle";
 import { Button } from "@windmill/react-ui";
 import { NavLink } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { useParams } from "react-router-dom/cjs/react-router-dom";
 import { fetchFirestoreData } from "../Hook/fetchFirestoreData";
+import TextEditor from "../components/TextEditor";
 
 const CreateEvent = () => {
   // get data from context
@@ -29,8 +30,9 @@ const CreateEvent = () => {
     location: "",
     date: "",
     image: "",
-    caption: "",
   };
+
+  const captionEditor = useRef(null);
 
   // form state
   const [form, setform] = useState(initialState);
@@ -116,12 +118,20 @@ const CreateEvent = () => {
 
   // handle submit
   const handleSubmit = async () => {
-    if (title && image && caption && location && date) {
+    if (
+      title &&
+      image &&
+      captionEditor.current.getContent().length > 1 &&
+      location &&
+      date
+    ) {
+      const captionEditorTxt = captionEditor.current.getContent();
       setloading(true);
 
       try {
         await addDoc(collection(db, "events"), {
           ...form,
+          caption: captionEditorTxt,
           dateId,
           createdAt: serverTimestamp(),
         });
@@ -142,13 +152,14 @@ const CreateEvent = () => {
   const handleUpdate = async () => {
     if (title && image && caption && location) {
       setloading(true);
-
+      const captionEditorTxt = captionEditor.current.getContent();
       try {
         // Update the document in Firestore
         const collectionRef = collection(db, "events");
         const docRef = doc(collectionRef, id);
         await updateDoc(docRef, {
           ...form,
+          caption: captionEditorTxt,
           updatedAt: serverTimestamp(),
         });
 
@@ -192,14 +203,15 @@ const CreateEvent = () => {
 
           <Label className="mt-5">
             <span>Description</span>
-            <Textarea
+            <TextEditor initialValue={caption} current={captionEditor} />
+            {/* <Textarea
               className="mt-1"
               rows="11"
               name="caption"
               value={caption}
               onChange={handleChange}
               placeholder="Enter some  content."
-            />
+            /> */}
           </Label>
 
           <Label className="mt-5">

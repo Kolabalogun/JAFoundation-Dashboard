@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PageTitle from "../components/Typography/PageTitle";
 import { Button } from "@windmill/react-ui";
 import { NavLink } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { useParams } from "react-router-dom/cjs/react-router-dom";
 import { fetchFirestoreData } from "../Hook/fetchFirestoreData";
+import TextEditor from "../components/TextEditor";
 
 const CreateArticle = () => {
   // get data from context
@@ -35,6 +36,9 @@ const CreateArticle = () => {
     paragraphOne: "",
     paragraphTwo: "",
   };
+
+  const paragraphOneEditor = useRef(null);
+  const paragraphTwoEditor = useRef(null);
 
   // form state
   const [form, setform] = useState(initialState);
@@ -95,8 +99,11 @@ const CreateArticle = () => {
 
   // handle submit
   const handleSubmit = async () => {
-    if (title && paragraphOne && paragraphTwo && date) {
+    if (title && paragraphOneEditor.current.getContent().length > 1 && date) {
       setloading(true);
+      const paragraphOneEditorTxt = paragraphOneEditor.current.getContent();
+
+      const paragraphTwoEditorTxt = paragraphTwoEditor.current.getContent();
 
       try {
         // Upload each file in the files array to Firebase Storage
@@ -146,6 +153,8 @@ const CreateArticle = () => {
 
         await addDoc(collection(db, "articles"), {
           ...updatedForm,
+          paragraphOne: paragraphOneEditorTxt,
+          paragraphTwo: paragraphTwoEditorTxt,
           dateId,
           createdAt: serverTimestamp(),
         });
@@ -164,7 +173,13 @@ const CreateArticle = () => {
 
   // handle submit
   const handleUpdate = async () => {
-    if (title && mainImg && paragraphOne && paragraphTwo && date && secondImg) {
+    if (
+      title &&
+      mainImg &&
+      paragraphOneEditor.current.getContent().length > 1 &&
+      date &&
+      secondImg
+    ) {
       setloading(true);
 
       try {
@@ -244,14 +259,18 @@ const CreateArticle = () => {
 
         <Label className="mt-5">
           <span>Paragraph One Description</span>
-          <Textarea
+          <TextEditor
+            initialValue={paragraphOne}
+            current={paragraphOneEditor}
+          />
+          {/* <Textarea
             className="mt-1"
             rows="11"
             name="paragraphOne"
             value={paragraphOne}
             onChange={handleChange}
             placeholder="Enter some content."
-          />
+          /> */}
         </Label>
 
         <div className="flex flex-col  mt-5">
@@ -278,14 +297,18 @@ const CreateArticle = () => {
 
         <Label className="mt-5">
           <span>Paragraph Two Description</span>
-          <Textarea
+          <TextEditor
+            initialValue={paragraphTwo}
+            current={paragraphTwoEditor}
+          />
+          {/* <Textarea
             className="mt-1"
             rows="11"
             name="paragraphTwo"
             value={paragraphTwo}
             onChange={handleChange}
             placeholder="Enter some content."
-          />
+          /> */}
         </Label>
 
         <div className="flex flex-col  mt-5">
