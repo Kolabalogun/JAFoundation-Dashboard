@@ -148,6 +148,9 @@ const AboutPageContents = () => {
           missionImg:
             uploadedFiles.find((file) => file.name === "missionImg")?.url ||
             form.missionImg,
+          founderImg:
+            uploadedFiles.find((file) => file.name === "founderImg")?.url ||
+            form.founderImg,
         };
 
         // Update the document in Firestore
